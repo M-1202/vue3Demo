@@ -22,6 +22,8 @@ const modules = [
     options: toolbarOptions
   }
 ]
+
+const dialogVisible = ref(false)
 </script>
 
 <template>
@@ -33,5 +35,28 @@ const modules = [
       theme="snow"
       style="height: 300px"
     />
+    <el-button @click="dialogVisible = true">预览</el-button>
   </div>
+  <el-dialog
+    v-model="dialogVisible"
+    title="Tips"
+    width="500"
+  >
+    <!-- <Markdown :content="content" /> -->
+    <div v-html="content"></div>
+  </el-dialog>
+  {{ content }}
 </template>
+
+<style lang="scss">
+// 有序列表样式
+  ol,
+  ul {
+    list-style-type: decimal; // 显示数字序号
+    padding-left: 1.5em; // 适当的缩进
+    white-space: normal;
+    li {
+      white-space: pre-line;
+    }
+  }
+</style>
