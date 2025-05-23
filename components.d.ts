@@ -13,5 +13,7 @@ declare module 'vue' {
     Markdown: typeof import('./src/components/common/Markdown.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TiptapEditor: typeof import('./src/components/common/TiptapEditor.vue')['default']
+    WangEditor: typeof import('./src/components/common/WangEditor.vue')['default']
   }
 }

@@ -2,26 +2,27 @@
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { ref } from 'vue'
-import Quill from 'quill'
+import { Quill } from '@vueup/vue-quill'
+import QuillHeader from 'quill/formats/header'
+import QuillList from 'quill/formats/list'
+
+Quill.register({
+  'formats/header': QuillHeader,
+  'formats/list': QuillList
+})
 
 const content = ref('<p>Hello Quill!</p>')
-
 // 工具栏配置
-const toolbarOptions = [
-  ['bold', 'italic', 'underline', 'strike'],
-  [{ header: [1, 2, 3, false] }],
-  [{ list: 'ordered' }, { list: 'bullet' }],
-  ['link', 'image'],
-  ['clean']
-]
-
-// modules 配置为符合 Quill 模块规范的数组形式
-const modules = [
-  {
-    module: Quill.import('modules/toolbar'),
-    options: toolbarOptions
+const modules = {
+  toolbar: {
+    container: [
+      ['bold', 'underline', 'strike'],
+      [{ header: [1, 2, 3, false] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['clean']
+    ]
   }
-]
+}
 
 const dialogVisible = ref(false)
 </script>
@@ -58,5 +59,9 @@ const dialogVisible = ref(false)
     li {
       white-space: pre-line;
     }
+  }
+  strong,
+  b {
+  font-weight: bold;
   }
 </style>
