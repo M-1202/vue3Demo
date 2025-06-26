@@ -21,6 +21,11 @@ const router = createRouter({
       path: '/rich-text',
       name: 'rich-text',
       component: () => import('../views/RichTextView.vue'),
+    },
+    {
+      path: '/select-text',
+      name: 'select-text',
+      component: () => import('../views/SelectTextView.vue'),
     }
   ],
 })
