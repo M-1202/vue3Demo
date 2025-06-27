@@ -14,9 +14,14 @@
           <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
             {{ block.title }}
           </h2>
-          <div class="text-content text-gray-600 leading-relaxed">
+          <Markdown
+            class="text-content"
+            :data-original-text="block.content"
+            :content="block.content"
+          />
+          <!-- <div class="text-content text-gray-600 leading-relaxed">
             {{ block.content }}
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -40,12 +45,12 @@ const textBlocks = [
   {
     title: "Tailwind CSS",
     content:
-      "Tailwind CSS 是一个实用优先的 CSS 框架，它提供了大量的实用类，让我们可以直接在 HTML 中构建自定义设计。",
+      "Tailwind CSS 是一个实用优先的 CSS 框架，$G^{} = f(AGG(z_i^{}, \{z_j^{} | (i, j) \in E\}))$它提供了大量的实用类，让我们可以直接在 HTML 中构建自定义设计。",
   },
   {
     title: "前端性能优化",
     content:
-      "前端性能优化包括多个方面：代码分割和懒加载、图片优化、缓存策略、减少重绘和回流等。通过这些技术，我们可以显著提升用户体验。",
+      "前端$G^{} = f(AGG(z_i^{}, \{z_j^{} | (i, j) \in E\}))$性能优化包括多个方面：代码分割和懒加载、图片优化、缓存策略、减少重绘和回流等。通过这些技术，我们可以显著提升用户体验。",
   },
 ];
 
@@ -64,11 +69,11 @@ onUnmounted(() => {
 function handleClick(e: MouseEvent) {
   // 点击标题或其他地方时确保移除弹框
   const target = e.target as HTMLElement;
-  const isSelectionBubble = target.closest(".selection-bubble");
-  const hasSelection = window.getSelection()?.toString().trim();
+  // const isSelectionBubble = target.closest(".selection-bubble");
+  // const hasSelection = window.getSelection()?.toString().trim();
 
   // 如果点击的不是弹框，并且没有新的选择，则移除弹框
-  if (!isSelectionBubble) {
+  if (!target.closest(".selection-bubble")) {
     document.querySelectorAll(".selection-bubble").forEach((el) => el.remove());
   }
 }
@@ -76,10 +81,11 @@ function handleClick(e: MouseEvent) {
 function handleMouseDown(e: MouseEvent) {
   // 如果点击的不是弹框，则移除弹框
   const target = e.target as HTMLElement;
+  // const isSelectionBubble = target.closest(".selection-bubble");
   if (!target.closest(".selection-bubble")) {
     document.querySelectorAll(".selection-bubble").forEach((el) => el.remove());
     // 清除文本选择
-    window.getSelection()?.removeAllRanges();
+    // window.getSelection()?.removeAllRanges();
   }
 }
 
@@ -98,10 +104,10 @@ function handleMouseUp(e: MouseEvent) {
     console.log("选中文本位置", range.startOffset, range.endOffset);
 
     const startBlock = (range.startContainer as Node).parentElement?.closest(
-      ".text-block"
+      ".text-content"
     );
     const endBlock = (range.endContainer as Node).parentElement?.closest(
-      ".text-block"
+      ".text-content"
     );
 
     // 移除已存在的弹框
@@ -109,7 +115,44 @@ function handleMouseUp(e: MouseEvent) {
 
     if (startBlock && endBlock && startBlock === endBlock) {
       // 在同一个文本块内
-      createBubble(selection.toString().trim(), range.getBoundingClientRect());
+      console.log("当前区域", startBlock, endBlock);
+
+      // const blockContentEl = startBlock.querySelector(".text-content")!;
+      // 拿到真实DOM元素
+      const blockContentEl = startBlock;
+      // 拿到文本块内容（渲染后的）
+      // const originalText = blockContentEl.textContent!;
+      // 拿到文本块内容（原始的）
+      const originalText = blockContentEl.getAttribute("data-original-text")!;
+
+      // 获取选中范围在整个文本块中的起始和结束索引
+      // 克隆 当前选中文本的范围 副本
+      const rangeClone = range.cloneRange();
+      // 将 rangeClone 的范围设置为整个 .text-content 区域的内容（相当于“全选”这个区域的所有文本）
+      rangeClone.selectNodeContents(blockContentEl);
+      console.log("range", range.toString().length);
+      console.log("选中文本开始位置", range.startOffset);
+      // 将克隆的 Range 缩短到选区的起始点
+      rangeClone.setEnd(range.startContainer, range.startOffset);
+      // const preSelectionRange = rangeClone.cloneRange();
+      // preSelectionRange.selectNodeContents(blockContentEl);
+      // preSelectionRange.setEnd(range.startContainer, range.startOffset);
+      const start = rangeClone.toString().length;
+      console.log("rangeClone", rangeClone.toString().length);
+
+      // rangeClone.setEnd(range.endContainer, range.endOffset);
+      const end = start + range.toString().length;
+
+      // 构造包裹后的内容
+      const wrappedText =
+        originalText.slice(0, start) +
+        `%${originalText.slice(start, end)}%` +
+        originalText.slice(end);
+      createBubble(
+        selection.toString().trim(),
+        range.getBoundingClientRect(),
+        wrappedText
+      );
     } else {
       // 跨文本块，清除选择
       selection.removeAllRanges();
@@ -118,7 +161,7 @@ function handleMouseUp(e: MouseEvent) {
   }, 50);
 }
 
-function createBubble(text: string, rect: DOMRect) {
+function createBubble(text: string, rect: DOMRect, wrappedText: string) {
   const bubble = document.createElement("div");
   bubble.className = "selection-bubble";
   bubble.innerHTML = `
@@ -137,11 +180,15 @@ function createBubble(text: string, rect: DOMRect) {
         <button class="action-btn">分享</button>
       </div>
       <input type="text" class="bubble-input" placeholder="添加备注...">
+      <div class="processed-text mt-3 text-sm text-gray-600 border-t pt-3">
+        <strong>处理后文本：</strong>
+        <pre class="whitespace-pre-wrap">${wrappedText}</pre>
+      </div>
     </div>
   `;
 
   // 设置位置
-  bubble.style.top = `${rect.top + window.scrollY - 140}px`;
+  bubble.style.top = `${rect.top + window.scrollY - 250}px`;
   bubble.style.left = `${rect.left + rect.width / 2 - 150}px`;
 
   // 点击复制按钮
@@ -292,5 +339,9 @@ function createBubble(text: string, rect: DOMRect) {
 ::selection {
   background-color: #60a5fa;
   color: white;
+}
+.MathJax,
+.katex {
+  user-select: text !important;
 }
 </style>
