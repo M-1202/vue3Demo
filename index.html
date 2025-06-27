@@ -11,6 +11,7 @@
     <script type="module" src="/src/main.ts"></script>
     <script>
       window.MathJax = {
+        loader: { load: ['input/tex', 'output/chtml'] }, // 确保用 CommonHTML 输出
         tex: {
           inlineMath: [
             ['$', '$'],
@@ -26,7 +27,17 @@
             'a'], // 避开某些标签
           ignoreHtmlClass: 'tex2jax_ignore',
           processHtmlClass: 'tex2jax_process'
-        }
+        },
+        // startup: {
+        //   ready() {
+        //     MathJax.startup.defaultReady();
+        //     MathJax.typesetPromise().then(() => {
+        //       document.querySelectorAll('.MathJax').forEach(el => {
+        //         el.style.userSelect = 'text';
+        //       });
+        //     });
+        //   }
+        // }
       }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>

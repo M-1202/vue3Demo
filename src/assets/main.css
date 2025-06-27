@@ -33,3 +33,11 @@ a,
     padding: 0 2rem;
   }
 }
+
+.MathJax,
+.MathJax * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}

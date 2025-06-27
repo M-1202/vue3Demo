@@ -30,6 +30,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
+import { mapRenderedOffsetsToOriginal } from "@/utils/selectionMapper";
 
 const textBlocks = [
   {
@@ -124,6 +125,7 @@ function handleMouseUp(e: MouseEvent) {
       // const originalText = blockContentEl.textContent!;
       // 拿到文本块内容（原始的）
       const originalText = blockContentEl.getAttribute("data-original-text")!;
+      const renderedText = blockContentEl.textContent!;
 
       // 获取选中范围在整个文本块中的起始和结束索引
       // 克隆 当前选中文本的范围 副本
@@ -137,11 +139,21 @@ function handleMouseUp(e: MouseEvent) {
       // const preSelectionRange = rangeClone.cloneRange();
       // preSelectionRange.selectNodeContents(blockContentEl);
       // preSelectionRange.setEnd(range.startContainer, range.startOffset);
-      const start = rangeClone.toString().length;
+      // const start = rangeClone.toString().length;
       console.log("rangeClone", rangeClone.toString().length);
 
       // rangeClone.setEnd(range.endContainer, range.endOffset);
-      const end = start + range.toString().length;
+      // const end = start + range.toString().length;
+
+      const startRenderedOffset = rangeClone.toString().length;
+      const endRenderedOffset = startRenderedOffset + range.toString().length;
+      // 关键：使用 diff-match-patch 映射位置
+      const [start, end] = mapRenderedOffsetsToOriginal(
+        renderedText,
+        originalText,
+        startRenderedOffset,
+        endRenderedOffset
+      );
 
       // 构造包裹后的内容
       const wrappedText =

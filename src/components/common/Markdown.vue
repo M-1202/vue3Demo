@@ -1,75 +1,82 @@
 <script setup>
-import { marked } from 'marked'
-import { watch, onMounted, ref, nextTick } from 'vue'
+import { marked } from "marked";
+import { watch, onMounted, ref, nextTick } from "vue";
 
 const props = defineProps({
   content: String,
-})
+});
 
-const htmlContent = ref('')
-const contentDom = ref(null)
+const htmlContent = ref("");
+const contentDom = ref(null);
 
 // 1. 自定义 `marked` 解析规则
 marked.use({
   extensions: [
     // 禁用单个 `~` 解析成 <del>
     {
-      name: 'no-single-tilde',
-      level: 'inline',
-      start (src) {
-        return src.match(/~[^~]/)?.index // 查找单个 `~`
+      name: "no-single-tilde",
+      level: "inline",
+      start(src) {
+        return src.match(/~[^~]/)?.index; // 查找单个 `~`
       },
-      tokenizer (src) {
-        const match = src.match(/^~([^~]+)~/)
+      tokenizer(src) {
+        const match = src.match(/^~([^~]+)~/);
         if (match) {
           return {
-            type: 'text',
+            type: "text",
             raw: match[0],
             text: match[0], // 让 `~xxx~` 保持原样
-          }
+          };
         }
-        return undefined
+        return undefined;
       },
     },
     // 禁用 *xxx* 和 _xxx_ 解析成 <em>
     {
-      name: 'disable-em',
-      level: 'inline',
-      start (src) {
-        return src.match(/[*_]/)?.index
+      name: "disable-em",
+      level: "inline",
+      start(src) {
+        return src.match(/[*_]/)?.index;
       },
-      tokenizer (src) {
-        const match = src.match(/^(\*|_)([^*_]+)\1/)
+      tokenizer(src) {
+        const match = src.match(/^(\*|_)([^*_]+)\1/);
         if (match) {
           return {
-            type: 'text',
+            type: "text",
             raw: match[0],
             text: match[0], // 保留原始 *xxx* 或 _xxx_
-          }
+          };
         }
-        return undefined
+        return undefined;
       },
     },
   ],
-})
+});
 
 // 2. 确保渲染顺序  marked -> v-html -> MathJax
 // 更新 Markdown 内容并渲染公式
 const renderMarkdown = async () => {
   htmlContent.value =
-    props.content === '-' ? '-' : marked.parse(props.content || '')
-  await nextTick()
+    props.content === "-" ? "-" : marked.parse(props.content || "");
+  await nextTick();
   if (window.MathJax) {
     try {
-      await window.MathJax.typesetPromise([contentDom.value])
+      await window.MathJax.typesetPromise([contentDom.value]).then(() => {
+        document.querySelectorAll("mjx-container").forEach((container) => {
+          container.style.userSelect = "text";
+          container.querySelectorAll("*").forEach((child) => {
+            child.style.userSelect = "text";
+          });
+        });
+      });
     } catch (err) {
-      console.warn('MathJax 渲染失败:', err)
+      console.warn("MathJax 渲染失败:", err);
     }
   }
-}
+};
 
-onMounted(renderMarkdown)
-watch(() => props.content, renderMarkdown)
+onMounted(renderMarkdown);
+watch(() => props.content, renderMarkdown);
 </script>
 
 <template>
